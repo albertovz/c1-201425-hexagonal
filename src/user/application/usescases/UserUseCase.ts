@@ -3,15 +3,16 @@ import { UserRepository } from '../../infrastructure/repositories/UserRepository
 import { User } from '../../domain/entities/User';
 
 export class UserUseCase {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private userRepository: UserRepository) { }
 
   async createUser(user: User): Promise<User> {
-    // Realiza la lógica de negocio, como validaciones, antes de crear al usuario
-    // Por ejemplo, verifica si el correo electrónico ya está registrado
-
-    // Llama al repositorio para crear al usuario
     const createdUser = await this.userRepository.createUser(user);
     return createdUser;
+  }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    // Implementa la búsqueda de usuario por correo aquí
+    return this.userRepository.getUserByEmail(email);
   }
 
   // Implementa otros métodos relacionados con usuarios
