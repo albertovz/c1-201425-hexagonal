@@ -49,6 +49,10 @@ export class UserUseCase {
     return this.userRepository.listInactiveUsers();
   }
 
+  async logoutUserById(userId: string): Promise<void> {
+    return Promise.resolve();
+  }
+
   async deleteUserById(userId: string): Promise<User | null> {
     // Implementa la lógica para eliminar un usuario por ID aquí
     return this.userRepository.deleteUserById(userId);

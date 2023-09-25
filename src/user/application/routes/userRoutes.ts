@@ -204,6 +204,23 @@ router.get('/api/getInactiveUsers', verifyToken, async (req, res) => {
   }
 });
 
+router.post('/api/logout/:id', verifyToken, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Verifica que el usuario que intenta cerrar sesión sea el mismo que está autenticado
+    if (userId !== req.userId) {
+      return res.status(403).json({ error: 'No tienes permiso para cerrar sesión de este usuario' });
+    }
+
+    // Puedes implementar lógica adicional aquí, como invalidar el token si lo estás usando para sesiones
+
+    res.status(200).json({ message: 'Sesión cerrada con éxito' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 router.delete('/api/delete/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
