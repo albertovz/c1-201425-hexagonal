@@ -3,26 +3,14 @@ import mysql from 'mysql';
 import { User } from '../../domain/entities/User';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
-// import { dbConfig } from '../database/db.config';
+require('dotenv').config();
 
-// dotenv.config({ path: __dirname + './environments/.env'});
-
-
-// const connection = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     database: process.env.DB_DATABASE, 
-// });
-
-// Configura la conexión a la base de datos MySQL
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'gestion',
+    host: process.env.DB_HOST, 
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
 };
-
 const connection = mysql.createConnection(dbConfig);
 
 connection.connect((err) => {

@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import userRoutes from './user/application/routes/userRoutes';
 import bookRoutes from './book/application/routes/bookRoutes';
 import reviewRoutes from './review/application/routes/reviewRoutes';
+require('dotenv').config();
 
 const app = express();
 
