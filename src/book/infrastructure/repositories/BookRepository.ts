@@ -44,9 +44,6 @@ connection.query(createTableQuery, (error, results, fields) => {
     } else {
         console.log('Tabla "books" creada exitosamente o ya existe.');
     }
-
-    // Cerrar la conexión a la base de datos
-    // connection.end();
 });
 
 export class BookRepository {
