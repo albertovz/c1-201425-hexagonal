@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
-import { LoanUseCase } from '../usescases/LoanUseCase';
-import { LoanRepository } from '../../infrastructure/repositories/LoanRepository';
+import { LoanUseCase } from '../../application/usescases/LoanUseCase';
+import { LoanRepository } from '../repositories/LoanRepository';
 import jwt from 'jsonwebtoken';
 
 const router: Router = express.Router();

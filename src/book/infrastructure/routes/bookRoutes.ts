@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
-import { BookUseCase } from '../usecases/BookUseCase';
-import { BookRepository } from '../../infrastructure/repositories/BookRepository';
+import { BookUseCase } from '../../application/usecases/BookUseCase';
+import { BookRepository } from '../repositories/BookRepository';
 import jwt from 'jsonwebtoken';
 
 const router: Router = express.Router();
@@ -32,7 +32,7 @@ const verifyToken = (req: Request, res: Response, next: Function) => {
     });
 };
 
-router.post('/api/create', verifyToken, async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         const book = req.body;
         const createdBook = await bookUseCase.createBook(book);
@@ -42,7 +42,7 @@ router.post('/api/create', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/books', async (req, res) => {
+router.get('/books', async (req, res) => {
     try {
         const books = await bookUseCase.getAllBooks();
         res.status(200).json(books);
@@ -51,7 +51,7 @@ router.get('/api/books', async (req, res) => {
     }
 });
 
-router.get('/api/books/:id', verifyToken, async (req, res) => {
+router.get('/books/:id', verifyToken, async (req, res) => {
     try {
         const bookId = req.params.id;
         const book = await bookUseCase.getBookById(bookId);
@@ -66,7 +66,7 @@ router.get('/api/books/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/search', verifyToken, async (req, res) => {
+router.get('/search', verifyToken, async (req, res) => {
     try {
         const { title, author, code } = req.query;
         const filteredBooks = await bookUseCase.filterBooks(title as string, author as string, code as string);
@@ -81,7 +81,7 @@ router.get('/api/search', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/list/inactive', verifyToken, async (req, res) => {
+router.get('/list/inactive', verifyToken, async (req, res) => {
     try {
         const inactiveBooks = await bookUseCase.getInactiveBooks();
 
@@ -95,7 +95,7 @@ router.get('/api/list/inactive', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/with-reviews', async (req, res) => {
+router.get('/with-reviews', async (req, res) => {
     try {
         const booksWithReviews = await bookUseCase.getBooksWithReviews();
         res.status(200).json(booksWithReviews);
@@ -104,7 +104,7 @@ router.get('/api/with-reviews', async (req, res) => {
     }
 });
 
-router.put('/api/updateBook/:id', verifyToken, async (req, res) => {
+router.put('/updateBook/:id', verifyToken, async (req, res) => {
     try {
         const bookId = req.params.id;
         const userId = req.userId;
@@ -122,7 +122,27 @@ router.put('/api/updateBook/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/api/update/:id/status', verifyToken, async (req, res) => {
+router.put('/borrow-book/:id', verifyToken, async (req, res) => {
+    try {
+        const bookId = req.params.id;
+        await bookUseCase.borrowBook(bookId);
+        res.status(200).json({ message: 'Libro prestado con éxito.' });
+    } catch (error) {
+        res.status(400).json({ message: 'El usuario ya tiene un libro, devuelva primero antes de solicitar otro.' });
+    }
+});
+
+router.put('/return-book/:id', verifyToken, async (req, res) => {
+    try {
+        const bookId = req.params.id;
+        await bookUseCase.returnBook(bookId);
+        res.status(200).json({ message: 'Libro devuelto con éxito.' });
+    } catch (error) {
+        res.status(400).json({ message: 'El usuario no tiene un libro prestado' });
+    }
+});
+
+router.put('/update/:id/status', verifyToken, async (req, res) => {
     try {
         const bookId = req.params.id;
         const userId = req.userId; // Obtener el ID del usuario del token
@@ -140,7 +160,7 @@ router.put('/api/update/:id/status', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/api/deleteBook/:id', verifyToken, async (req, res) => {
+router.delete('/deleteBook/:id', verifyToken, async (req, res) => {
     try {
         const bookId = req.params.id;
         const userId = req.userId;

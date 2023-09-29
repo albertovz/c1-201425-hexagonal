@@ -1,7 +1,7 @@
 // src/application/routes/userRoutes.ts
 import express, { Router, Request, Response } from 'express';
-import { UserUseCase } from '../usescases/UserUseCase';
-import { UserRepository } from '../../infrastructure/repositories/UserRepository';
+import { UserUseCase } from '../../application/usescases/UserUseCase';
+import { UserRepository } from '../repositories/UserRepository';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
@@ -34,7 +34,7 @@ const verifyToken = (req: Request, res: Response, next: Function) => {
   });
 };
 
-router.post('/api/create', async (req, res) => {
+router.post('/create', async (req, res) => {
   try {
     const user = req.body;
     const createdUser = await userUseCase.createUser(user);
@@ -44,7 +44,7 @@ router.post('/api/create', async (req, res) => {
   }
 });
 
-router.get('/api/user/:id', verifyToken, async (req, res) => {
+router.get('/user/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
 
@@ -65,7 +65,7 @@ router.get('/api/user/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/api/users', verifyToken, async (req, res) => {
+router.get('/users', verifyToken, async (req, res) => {
   try {
     // Verifica que el usuario tenga permisos para esta acción (puedes implementar lógica adicional aquí)
     // Si lo deseas, puedes verificar si el usuario que hace la solicitud tiene un rol específico o privilegios para ver todos los usuarios.
@@ -78,7 +78,7 @@ router.get('/api/users', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/api/search', verifyToken, async (req, res) => {
+router.get('/search', verifyToken, async (req, res) => {
   try {
     const { name, email } = req.query;
 
@@ -91,7 +91,7 @@ router.get('/api/search', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/api/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -118,7 +118,7 @@ router.post('/api/login', async (req, res) => {
   }
 });
 
-router.put('/api/update/:id', verifyToken, async (req, res) => {
+router.put('/update/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     const userData = req.body;
@@ -140,7 +140,7 @@ router.put('/api/update/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/api/updatePassword/:id', verifyToken, async (req, res) => {
+router.put('/updatePassword/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     const { newPassword } = req.body;
@@ -167,7 +167,7 @@ router.put('/api/updatePassword/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/api/updateStatus/:id', verifyToken, async (req, res) => {
+router.put('/updateStatus/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     const { newStatus } = req.body;
@@ -194,7 +194,7 @@ router.put('/api/updateStatus/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/api/requestLoan/:id', verifyToken, async (req, res) => {
+router.put('/requestLoan/:id', verifyToken, async (req, res) => {
   try {
       const userId = req.params.id;
       const { loanStatus } = req.body;
@@ -221,7 +221,7 @@ router.put('/api/requestLoan/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/api/return-book/:id', verifyToken, async (req, res) => {
+router.put('/return-book/:id', verifyToken, async (req, res) => {
   try {
       const userId = req.params.id;
       await userUseCase.returnBook(userId);
@@ -231,8 +231,7 @@ router.put('/api/return-book/:id', verifyToken, async (req, res) => {
   }
 });
 
-
-router.get('/api/getInactiveUsers', verifyToken, async (req, res) => {
+router.get('/getInactiveUsers', verifyToken, async (req, res) => {
   try {
     const inactiveUsers = await userUseCase.listInactiveUsers();
 
@@ -242,7 +241,7 @@ router.get('/api/getInactiveUsers', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/api/logout/:id', verifyToken, async (req, res) => {
+router.post('/logout/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
 
@@ -259,7 +258,7 @@ router.post('/api/logout/:id', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/api/delete/:id', verifyToken, async (req, res) => {
+router.delete('/delete/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
 

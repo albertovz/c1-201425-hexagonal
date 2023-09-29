@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 require('dotenv').config();
 
 const dbConfig = {
-    host: process.env.DB_HOST, 
+    host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
@@ -32,6 +32,7 @@ const createTableQuery = `
       status BOOLEAN NOT NULL,
       code VARCHAR(255) NOT NULL,
       idUser CHAR(36) NOT NULL,
+      loan_status BOOLEAN NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       deleted_at TIMESTAMP NULL
@@ -51,8 +52,8 @@ export class BookRepository {
     async createBook(book: Book): Promise<Book> {
         return new Promise((resolve, reject) => {
             const id = uuidv4(); // Genera un UUID único
-            const query = 'INSERT INTO books (id, title, author, description, year, img_url, status, code, idUser) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            const values = [id, book.title, book.author, book.description, book.year, book.img_url, book.status, book.code, book.idUser];
+            const query = 'INSERT INTO books (id, title, author, description, year, img_url, status, code, idUser, loan_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const values = [id, book.title, book.author, book.description, book.year, book.img_url, book.status, book.code, book.idUser, book.loan_status];
 
             connection.query(query, values, (err, result) => {
                 if (err) {
@@ -86,6 +87,7 @@ export class BookRepository {
                         status: row.status,
                         code: row.code,
                         idUser: row.idUser,
+                        loan_status: row.loan_status
                     }));
                     resolve(books);
                 }
@@ -116,6 +118,7 @@ export class BookRepository {
                             status: row.status,
                             code: row.code,
                             idUser: row.idUser,
+                            loan_status: row.loan_status
                         };
                         resolve(book);
                     }
@@ -143,6 +146,7 @@ export class BookRepository {
                         status: row.status,
                         code: row.code,
                         idUser: row.idUser,
+                        loan_status: row.loan_status
                     }));
                     resolve(inactiveBooks);
                 }
@@ -174,7 +178,7 @@ export class BookRepository {
                         status: row.status,
                         code: row.code,
                         idUser: row.idUser,
-                        // Puedes mapear aquí los datos de las reseñas si es necesario
+                        loan_status: row.loan_status
                     }));
                     resolve(booksWithReviews);
                 }
@@ -218,6 +222,7 @@ export class BookRepository {
                         status: row.status,
                         code: row.code,
                         idUser: row.idUser,
+                        loan_status: row.loan_status
                     }));
                     resolve(books);
                 }
@@ -275,6 +280,71 @@ export class BookRepository {
         });
     }
 
+    async borrowBook(id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const query = 'SELECT loan_status FROM books WHERE id = ?';
+            const values = [id];
+            connection.query(query, values, (err, result) => {
+                if (err) {
+                    console.error('Error al verificar el estado del préstamo:', err);
+                    reject(err);
+                } else {
+                    if (result.length === 0 || result[0].loan_status === true) {
+                        // El estado del préstamo es false, no se puede devolver el libro
+                        console.error('No se puede prestar el libro porque el estado del préstamo es true.');
+                        reject(new Error('El usuario ya tiene un libro, devuelva primero antes de solicitar otro.'));
+                    } else {
+                        // El estado del préstamo es true, se puede devolver el libro
+                        const updateQuery = 'UPDATE books SET loan_status = ? WHERE id = ?';
+                        const updateValues = [true, id];
+                        connection.query(updateQuery, updateValues, (updateErr, updateResult) => {
+                            if (updateErr) {
+                                console.error('Error al prestar el libro el libro:', updateErr);
+                                reject(updateErr);
+                            } else {
+                                console.log('Libro prestado con éxito');
+                                resolve();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+    async returnBook(userId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const query = 'SELECT loan_status FROM books WHERE id = ?';
+            const values = [userId];
+            connection.query(query, values, (err, result) => {
+                if (err) {
+                    console.error('Error al verificar el estado del préstamo:', err);
+                    reject(err);
+                } else {
+                    if (result.length === 0 || result[0].loan_status === false) {
+                        // El estado del préstamo es false, no se puede devolver el libro
+                        console.error('No se puede devolver el libro porque el estado del préstamo es false.');
+                        reject(new Error('No se puede devolver el libro.'));
+                    } else {
+                        // El estado del préstamo es true, se puede devolver el libro
+                        const updateQuery = 'UPDATE books SET loan_status = ? WHERE id = ?';
+                        const updateValues = [false, userId];
+                        connection.query(updateQuery, updateValues, (updateErr, updateResult) => {
+                            if (updateErr) {
+                                console.error('Error al devolver el libro:', updateErr);
+                                reject(updateErr);
+                            } else {
+                                console.log('Libro devuelto con éxito');
+                                resolve();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+
     async deleteBookById(bookId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const query = 'DELETE FROM books WHERE id = ?';
@@ -290,7 +360,5 @@ export class BookRepository {
             });
         });
     }
-
-
 
 }
