@@ -40,7 +40,7 @@ router.post('/api/create', async (req, res) => {
     const createdUser = await userUseCase.createUser(user);
     res.status(201).json('Usuario creado con éxito.');
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json('El usuario ya existe.');
   }
 });
 
@@ -193,6 +193,44 @@ router.put('/api/updateStatus/:id', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+router.put('/api/requestLoan/:id', verifyToken, async (req, res) => {
+  try {
+      const userId = req.params.id;
+      const { loanStatus } = req.body;
+
+      // Verifica que el usuario que intenta actualizar el estado de préstamo sea el mismo que está autenticado
+      if (userId !== req.userId) {
+          return res.status(403).json({ error: 'No tienes permiso para actualizar el estado de préstamo de este usuario' });
+      }
+
+      // Verifica que el nuevo estado de préstamo sea un valor booleano
+      if (typeof loanStatus !== 'boolean') {
+          return res.status(400).json({ error: 'El nuevo estado de préstamo debe ser un valor booleano' });
+      }
+
+      const updatedUser = await userUseCase.updateUserLoanStatus(userId, loanStatus);
+
+      if (!updatedUser) {
+          return res.status(404).json({ message: 'Primero devuelve el libro prro' });
+      }
+
+      res.status(200).json({ message: 'Estado de préstamo del usuario actualizado con éxito' });
+  } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.put('/api/return-book/:id', verifyToken, async (req, res) => {
+  try {
+      const userId = req.params.id;
+      await userUseCase.returnBook(userId);
+      res.status(200).json({ message: 'Libro devuelto con éxito.' });
+  } catch (error) {
+      res.status(400).json({ message: 'El usuario no tiene un libro prestado' });
+  }
+});
+
 
 router.get('/api/getInactiveUsers', verifyToken, async (req, res) => {
   try {

@@ -5,5 +5,6 @@ export interface User {
     email: string;
     password: string;
     status: boolean;
+    loan_status: boolean;
   }
   

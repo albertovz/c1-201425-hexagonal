@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 require('dotenv').config();
 
 const dbConfig = {
-    host: process.env.DB_HOST, 
+    host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
@@ -26,9 +26,10 @@ const createTableQuery = `
       id CHAR(36) PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       last_name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       status BOOLEAN NOT NULL,
+      loan_status BOOLEAN NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       deleted_at TIMESTAMP NULL
@@ -41,9 +42,6 @@ connection.query(createTableQuery, (error, results, fields) => {
     } else {
         console.log('Tabla "users" creada exitosamente o ya existe.');
     }
-
-    // Cerrar la conexión a la base de datos
-    // connection.end();
 });
 
 export class UserRepository {
@@ -55,8 +53,8 @@ export class UserRepository {
                     console.error('Error al crear el usuario:', err);
                     reject(err);
                 } else {
-                    const query = 'INSERT INTO users (id, name, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?)';
-                    const values = [id, user.name, user.last_name, user.email, hash, user.status];
+                    const query = 'INSERT INTO users (id, name, last_name, email, password, status, loan_status) VALUES (?, ?, ?, ?, ?, ?, ?)';
+                    const values = [id, user.name, user.last_name, user.email, hash, user.status, user.loan_status];
 
                     connection.query(query, values, (err, result) => {
                         if (err) {
@@ -91,6 +89,7 @@ export class UserRepository {
                             email: user.email,
                             password: user.password,
                             status: user.status,
+                            loan_status: user.loan_status
                         });
                     }
                 }
@@ -117,6 +116,7 @@ export class UserRepository {
                             email: user.email,
                             password: user.password,
                             status: user.status,
+                            loan_status: user.loan_status
                         });
                     }
                 }
@@ -143,6 +143,7 @@ export class UserRepository {
                             email: row.email,
                             password: row.password,
                             status: row.status,
+                            loan_status: row.loan_status
                         });
                     }
 
@@ -258,6 +259,58 @@ export class UserRepository {
         });
     }
 
+    async updateLoanStatus(userId: string, loanStatus: boolean): Promise<User | null> {
+        return new Promise((resolve, reject) => {
+            // Primero, verifica el estado actual
+            const checkQuery = 'SELECT loan_status FROM users WHERE id = ?';
+            const checkValues = [userId];
+
+            connection.query(checkQuery, checkValues, (checkErr, checkResult) => {
+                if (checkErr) {
+                    console.error('Error al verificar el estado de préstamo del usuario:', checkErr);
+                    reject(checkErr);
+                } else {
+                    const currentLoanStatus = checkResult[0]?.loan_status;
+                    
+                    if (currentLoanStatus === 0) {
+                        const updateQuery = 'UPDATE users SET loan_status = ? WHERE id = ?';
+                        const updateValues = [loanStatus, userId];
+
+                        connection.query(updateQuery, updateValues, (updateErr, updateResult) => {
+                            if (updateErr) {
+                                console.error('Error al actualizar el estado de préstamo del usuario:', updateErr);
+                                reject(updateErr);
+                            } else {
+                                console.log('Estado de préstamo del usuario actualizado con éxito.');
+                                resolve({ id: userId, loan_status: loanStatus } as User);
+                            }
+                        });
+                    } else {
+                        // El estado actual no es false, no se realiza la actualización
+                        console.log('Primero devuelve el libro prro');
+                        resolve(null);
+                    }
+                }
+            });
+        });
+    }
+
+    async returnBook(userId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const query = 'UPDATE users SET loan_status = ? WHERE id = ?';
+            const values = [false, userId];
+            connection.query(query, values, (err, result) => {
+                if (err) {
+                    console.error('Error al devolver el libro:', err);
+                    reject(err);
+                } else {
+                    console.log('Libro devuelto con éxito');
+                    resolve();
+                }
+            });
+        });
+    }
+
     async listInactiveUsers(): Promise<User[]> {
         return new Promise((resolve, reject) => {
             const query = 'SELECT * FROM users WHERE status = false';
@@ -276,6 +329,7 @@ export class UserRepository {
                             email: row.email,
                             password: row.password,
                             status: row.status,
+                            loan_status: row.loan_status
                         });
                     }
 
@@ -313,6 +367,7 @@ export class UserRepository {
                         email: row.email,
                         password: row.password,
                         status: row.status,
+                        loan_status: row.loan_status
                     }));
                     resolve(users);
                 }
