@@ -8,5 +8,6 @@ export interface Book {
     status: boolean;
     code: string;
     idUser: string;
+    loan_status: boolean;
   }
   

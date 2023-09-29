@@ -63,4 +63,21 @@ export class BookUseCase {
         return updatedBook;
     }
 
+    async borrowBook(bookId: string): Promise<void> {
+        const book = await this.bookRepository.getBookById(bookId);
+        console.log(book?.loan_status)
+        if (book) {
+            throw new Error('El usuario ya tiene un libro prestrado, devuelva el actual primero.');
+        }
+        await this.bookRepository.borrowBook(bookId);
+    }
+
+    async returnBook(bookId: string): Promise<void> {
+        const book = await this.bookRepository.getBookById(bookId);
+        if (!book || !book.loan_status) {
+            throw new Error('El usuario no tiene un libro prestado para devolver.');
+        }
+        await this.bookRepository.returnBook(bookId);
+    }
+
 }

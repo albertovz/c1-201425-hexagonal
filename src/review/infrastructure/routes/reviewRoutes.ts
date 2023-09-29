@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
-import { ReviewUseCase } from '../usecases/ReviewUseCase';
-import { ReviewRepository } from '../../infrastructure/repositories/ReviewRepository';
+import { ReviewUseCase } from '../../application/usecases/ReviewUseCase';
+import { ReviewRepository } from '../repositories/ReviewRepository';
 import jwt from 'jsonwebtoken';
 
 const router: Router = express.Router();

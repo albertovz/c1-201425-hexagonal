@@ -271,7 +271,6 @@ export class UserRepository {
                     reject(checkErr);
                 } else {
                     const currentLoanStatus = checkResult[0]?.loan_status;
-                    
                     if (currentLoanStatus === 0) {
                         const updateQuery = 'UPDATE users SET loan_status = ? WHERE id = ?';
                         const updateValues = [loanStatus, userId];
