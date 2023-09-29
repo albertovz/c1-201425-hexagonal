@@ -32,7 +32,7 @@ const verifyToken = (req: Request, res: Response, next: Function) => {
     });
 };
 
-router.post('/api/create', verifyToken, async (req, res) => {
+router.post('/create', verifyToken, async (req, res) => {
     try {
         const review = req.body;
         const createdReview = await reviewUseCase.createReview(review);
@@ -42,7 +42,7 @@ router.post('/api/create', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/reviews', async (req, res) => {
+router.get('/reviews', async (req, res) => {
     try {
         const reviews = await reviewUseCase.getAllReviews();
         res.status(200).json(reviews);
@@ -51,7 +51,7 @@ router.get('/api/reviews', async (req, res) => {
     }
 });
 
-router.get('/api/reviews/:id', verifyToken, async (req, res) => {
+router.get('/reviews/:id', verifyToken, async (req, res) => {
     try {
         const reviewId = req.params.id;
         const review = await reviewUseCase.getReviewById(reviewId);
@@ -66,7 +66,7 @@ router.get('/api/reviews/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/api/inactive-status', verifyToken, async (req, res) => {
+router.get('/inactive-status', verifyToken, async (req, res) => {
     try {
         const reviews = await reviewUseCase.getReviewsWithStatus();
         res.status(200).json(reviews);
@@ -75,7 +75,7 @@ router.get('/api/inactive-status', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/api/update/review/:id', verifyToken, async (req, res) => {
+router.put('/update/review/:id', verifyToken, async (req, res) => {
     try {
         const reviewId = req.params.id;
         const userId = req.userId; // Obtén el ID del usuario del token
@@ -100,7 +100,7 @@ router.put('/api/update/review/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/api/reviews/:id/change-status', verifyToken, async (req, res) => {
+router.put('/reviews/:id/change-status', verifyToken, async (req, res) => {
     try {
         const reviewId = req.params.id;
         const userId = req.userId; // Obtén el ID del usuario del token
@@ -125,7 +125,23 @@ router.put('/api/reviews/:id/change-status', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/api/delete/:id', verifyToken, async (req, res) => {
+router.get('/filter/user/:userId', verifyToken, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Verifica si el usuario que intenta acceder es el mismo que se está solicitando
+        if (req.userId !== userId) {
+            return res.status(403).json({ error: 'No tienes permisos para acceder a estas reseñas' });
+        }
+
+        const reviews = await reviewUseCase.filterReviewsByUserId(userId);
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.delete('/delete/:id', verifyToken, async (req, res) => {
     try {
         const reviewId = req.params.id;
         const userId = req.userId; // Obtén el ID del usuario del token
