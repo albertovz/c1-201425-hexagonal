@@ -1,6 +1,8 @@
 import { DataTypes, Model } from "sequelize";
 import bcrypt from 'bcryptjs';
 import sequelize from "../../../database/mysql";
+import { ReviewModel } from "../../../review/infrastructure/models/reviewModel";
+import { LoanModel } from "../../../loan/domain/models/loanModel";
 
 interface UserModelAttributes {
     idUser: number;
@@ -69,5 +71,6 @@ UserModel.beforeCreate(async (user : UserModel) => {
     }
 });
 
-
+UserModel.hasMany(ReviewModel, { foreignKey: 'idUser', as: 'reviews' });
+UserModel.hasMany(LoanModel, { foreignKey: 'idUser', as: 'loans' });
 export default UserModel;
